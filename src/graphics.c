@@ -1,5 +1,4 @@
 #include <graphics.h>
-#include <utils.h>
 
 struct kgraphics kgraphics;
 

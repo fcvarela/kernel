@@ -2,6 +2,7 @@
 #include <efilib.h>
 
 #include <kernel.h>
+#include <serial.h>
 #include <memory.h>
 #include <graphics.h>
 
@@ -12,6 +13,9 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE imageHandle, EFI_SYSTEM_TABLE *st) {
     
     // EFI lib init
     InitializeLib(imageHandle, st);
+
+    // Init serial for debugging and troubleshooting first
+    kserial_efi_init(st);
 
     // Init graphics to graphics mode
     kgraphics_efi_init(st);

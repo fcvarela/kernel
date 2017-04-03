@@ -1,5 +1,5 @@
-#ifndef __KERNEL__
-#define __KERNEL
+#ifndef __KERNEL_H__
+#define __KERNEL_H__
 
 void kmain(void);
 
