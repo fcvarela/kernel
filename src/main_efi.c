@@ -1,6 +1,7 @@
 #include <efi.h>
 #include <efilib.h>
 
+#include <kernel.h>
 #include <memory.h>
 #include <graphics.h>
 
@@ -20,11 +21,11 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE imageHandle, EFI_SYSTEM_TABLE *st) {
     uefi_call_wrapper(st->BootServices->ExitBootServices, 2, imageHandle, map.map_key);
     uefi_call_wrapper(st->RuntimeServices->SetVirtualAddressMap, 4, map.map_size, map.descriptor_size, map.descriptor_version, map.map);
     
+    // set our pretty background
     kgraphics_fill_color(0x23 << 16 | 0x2c << 8 | 0x31);
     
-    for (;;) {
-        __asm__("hlt");
-    }
+    // start kernel
+    kmain();
 
     return EFI_SUCCESS;
 }
