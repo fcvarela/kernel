@@ -23,8 +23,7 @@ EFI_STATUS select_mode(EFI_GRAPHICS_OUTPUT_PROTOCOL *graphics, OUT UINT32 *mode)
     UINTN size;
 
     // Initialize info of current mode
-    EFI_STATUS status = uefi_call_wrapper(graphics->QueryMode, 4,
-                                          graphics, *mode, &size, &info);
+    EFI_STATUS status = uefi_call_wrapper(graphics->QueryMode, 4, graphics, *mode, &size, &info);
     ASSERT_EFI_STATUS(status, L"select_mode");
     most_appropriate_info = *info;
 
@@ -34,10 +33,7 @@ EFI_STATUS select_mode(EFI_GRAPHICS_OUTPUT_PROTOCOL *graphics, OUT UINT32 *mode)
         EFI_STATUS status = uefi_call_wrapper(graphics->QueryMode, 4,
                                               graphics, i, &size, &info);
         ASSERT_EFI_STATUS(status, L"select_mode");
-        #ifdef DEBUG
-        Print(L"Option #%d: w: %d, h: %d, pixel format: %d\n",
-              i, info->HorizontalResolution, info->VerticalResolution, info->PixelFormat);
-        #endif
+        Print(L"Option #%d: w: %d, h: %d, pixel format: %d\n", i, info->HorizontalResolution, info->VerticalResolution, info->PixelFormat);
         // We only accept RGB or BGR 8 bit colorspaces.
         if(info->PixelFormat != PixelRedGreenBlueReserved8BitPerColor &&
            info->PixelFormat != PixelBlueGreenRedReserved8BitPerColor) {
@@ -62,12 +58,10 @@ EFI_STATUS select_mode(EFI_GRAPHICS_OUTPUT_PROTOCOL *graphics, OUT UINT32 *mode)
         }
     }
     graphics_info.output_mode = most_appropriate_info;
-    #ifdef DEBUG
     Print(L"Option #%d selected: w: %d, h: %d, pixel format: %d\n",
           *mode,
           most_appropriate_info.HorizontalResolution, most_appropriate_info.VerticalResolution,
           most_appropriate_info.PixelFormat);
-    #endif
     return EFI_SUCCESS;
 }
 

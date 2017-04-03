@@ -13,12 +13,12 @@ struct graphics_info {
     size_t                               buffer_size;
 };
 
-#define GRAPHICS_MOST_APPROPRIATE_H 1080
-#define GRAPHICS_MOST_APPROPRIATE_W 1920
+#define GRAPHICS_MOST_APPROPRIATE_H 768
+#define GRAPHICS_MOST_APPROPRIATE_W 1024
 
 EFI_STATUS select_mode(EFI_GRAPHICS_OUTPUT_PROTOCOL *graphics, OUT UINT32 *mode);
 EFI_STATUS init_graphics(EFI_GRAPHICS_OUTPUT_PROTOCOL *graphics);
-EFI_STATUS select_mode(EFI_GRAPHICS_OUTPUT_PROTOCOL *graphics, OUT UINT32 *mode);
+
 void set_pixel(int w, int h, uint32_t rgb);
 
 #endif

@@ -1,6 +1,6 @@
 ARCH            = $(shell uname -m | sed s,i[3456789]86,ia32,)
 INCLUDES        = $(wildcard src/*.h)
-OBJS            = src/kernel.o src/memorymap.o src/graphics.o
+OBJS            = src/kernel.o src/graphics.o
 TARGET          = kernel.efi
 EFIINC          = /usr/include/efi
 EFIINCS         = -I$(EFIINC) -I$(EFIINC)/$(ARCH) -I$(EFIINC)/protocol -Isrc

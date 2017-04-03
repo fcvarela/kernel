@@ -2,7 +2,6 @@
 #include <efilib.h>
 
 #include <intel-efi/efiConsoleControl.h>
-#include <intel-efi/efiUgaDraw.h>
 
 #include <memorymap.h>
 #include <graphics.h>
@@ -14,9 +13,6 @@ EFI_STATUS EFIAPI WaitForKeyWithMessage(IN CHAR16 *fmt);
 static EFI_GUID ConsoleControlProtocolGuid = EFI_CONSOLE_CONTROL_PROTOCOL_GUID;
 static EFI_CONSOLE_CONTROL_PROTOCOL *ConsoleControl = NULL;
 
-static EFI_GUID UgaDrawProtocolGuid = EFI_UGA_DRAW_PROTOCOL_GUID;
-static EFI_UGA_DRAW_PROTOCOL *UgaDraw = NULL;
-
 static EFI_GUID GraphicsOutputProtocolGuid = EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID;
 static EFI_GRAPHICS_OUTPUT_PROTOCOL *GraphicsOutput = NULL;
 
@@ -27,11 +23,6 @@ EFI_STATUS EFIAPI LoadProtocols(VOID) {
     Status = LibLocateProtocol(&ConsoleControlProtocolGuid, (VOID **)&ConsoleControl);
     if (EFI_ERROR(Status)) {
         ConsoleControl = NULL;
-    }
-
-    Status = LibLocateProtocol(&UgaDrawProtocolGuid, (VOID **)&UgaDraw);
-    if (EFI_ERROR(Status)) {
-        UgaDraw = NULL;
     }
 
     Status = LibLocateProtocol(&GraphicsOutputProtocolGuid, (VOID **)&GraphicsOutput);
@@ -68,12 +59,6 @@ EFI_STATUS EFIAPI LogProtocolStatus(VOID) {
         Print(L"        No GraphicsOutput protocol\n");
     }
 
-    if (UgaDraw != NULL) {
-        Print(L"        Got UgaDraw protocol\n");
-    } else {
-        Print(L"        No UgaDraw protocol\n");
-    }
-
     Print(L"\n");
 
     return EFI_SUCCESS;
@@ -86,59 +71,48 @@ VOID EFIAPI ErrorCheck(EFI_STATUS status, IN CHAR16 *fmt) {
     }
 }
 
-
-void write_string( int color, const char *string )
-{
-    volatile char *video = (volatile char*)0xB8000;
-    while( *string != 0 )
-    {
-        *video++ = *string++;
-        *video++ = color;
-    }
-}
-
 EFI_STATUS EFIAPI efi_main(EFI_HANDLE imageHandle, EFI_SYSTEM_TABLE *st) {
+    struct efi_memorymap map;
+    
+    // EFI lib init
     InitializeLib(imageHandle, st);
+
+    // Load all protocols we want to use (console, graphics)
     LoadProtocols();
+
+    // Basic diagnostics
     SetTextMode(st);
     LogProtocolStatus();
+
+    // Switch to graphics mode
     init_graphics(GraphicsOutput);
 
-    // sync memory map
-    struct efi_memorymap map;
-    EFI_STATUS err = memorymap_sync(st, &map);
-    if (EFI_ERROR(err)) {
-        Print(L"Error in memorymap_sync: %r\n", err);
-       return err;
-    }
-
-    err = uefi_call_wrapper(st->BootServices->ExitBootServices, 2, imageHandle, map.key);
-    if (EFI_ERROR(err)) {
-        Print(L"Error in ExitBootServices #1: %r mapKey: %d\n", err, map.key);
-        return err;
-    }
-    
-    uefi_call_wrapper(st->RuntimeServices->SetVirtualAddressMap, 4, map.map_size, map.desc_size, map.desc_ver, map.map);
+    // sync memory map and exit boot services, set address map
+    map.map = LibMemoryMap(&map.map_size, &map.map_key, &map.descriptor_size, &map.descriptor_version);
+    uefi_call_wrapper(st->BootServices->ExitBootServices, 2, imageHandle, map.map_key);
+    uefi_call_wrapper(st->RuntimeServices->SetVirtualAddressMap, 4, map.map_size, map.descriptor_size, map.descriptor_version, map.map);
     
     // Some work, blends in the lithuanian flag
-    for(uint8_t o = 0; o <= 100; o += 1) {
-        for(int x = 0; x < 1920; x += 1) {
-            for(int y = 0; y < 360; y += 1) {
+    for (uint8_t o = 0; o <= 100; o += 1) {
+        for (int x = 0; x < 800; x += 1) {
+            for(int y = 0; y < 200; y += 1) {
                 uint32_t r = (0xfd * o / 100 ) << 16;
                 uint32_t g = (0xb9 * o / 100 ) << 8;
                 uint32_t b = (0x13 * o / 100 );
                 set_pixel(x, y, r | g | b);
             }
         }
-        for(int x = 0; x < 1920; x += 1) {
-            for(int y = 360; y < 720; y += 1) {
+
+        for (int x = 0; x < 800; x += 1) {
+            for(int y = 200; y < 400; y += 1) {
                 uint32_t g = (0x6a * o / 100) << 8;
                 uint32_t b = (0x44 * o / 100);
                 set_pixel(x, y, g | b);
             }
         }
-        for(int x = 0; x < 1920; x += 1) {
-            for(int y = 720; y < 1080; y += 1) {
+        
+        for (int x = 0; x < 800; x += 1) {
+            for(int y = 400; y < 600; y += 1) {
                 uint32_t r = (0xc1 * o / 100) << 16;
                 uint32_t g = (0x27 * o / 100) << 8;
                 uint32_t b = (0x2d * o / 100);
