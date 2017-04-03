@@ -5,6 +5,7 @@
 #include <intel-efi/efiUgaDraw.h>
 
 #include <memorymap.h>
+#include <graphics.h>
 
 // protos
 VOID EFIAPI ErrorCheck(EFI_STATUS st, IN CHAR16 *fmt);
@@ -41,10 +42,13 @@ EFI_STATUS EFIAPI LoadProtocols(VOID) {
     return EFI_SUCCESS;
 }
 
-EFI_STATUS EFIAPI SetTextMode(VOID) {
+EFI_STATUS EFIAPI SetTextMode(EFI_SYSTEM_TABLE *st) {
     if (ConsoleControl != NULL) {
         uefi_call_wrapper(ConsoleControl->SetMode, 2, ConsoleControl, EfiConsoleControlScreenText);
     }
+
+    // clear out, in
+    uefi_call_wrapper(st->ConOut->ClearScreen, 1, ST->ConOut);
 
     return EFI_SUCCESS;
 }
@@ -53,38 +57,24 @@ EFI_STATUS EFIAPI LogProtocolStatus(VOID) {
     Print(L"Active protocols:\n");
 
     if (ConsoleControl != NULL) {
-        Print(L"    Got ConsoleControl protocol\n");
+        Print(L"        Got ConsoleControl protocol\n");
     } else {
-        Print(L"    No ConsoleControl protocol\n");
+        Print(L"        No ConsoleControl protocol\n");
     }
 
     if (GraphicsOutput != NULL) {
-        Print(L"    Got GraphicsOutput protocol\n");
+        Print(L"        Got GraphicsOutput protocol\n");
     } else {
-        Print(L"    No GraphicsOutput protocol\n");
+        Print(L"        No GraphicsOutput protocol\n");
     }
 
     if (UgaDraw != NULL) {
-        Print(L"    Got UgaDraw protocol\n");
+        Print(L"        Got UgaDraw protocol\n");
     } else {
-        Print(L"    No UgaDraw protocol\n");
+        Print(L"        No UgaDraw protocol\n");
     }
 
     Print(L"\n");
-
-    return EFI_SUCCESS;
-}
-
-EFI_STATUS EFIAPI WaitForKeyWithMessage(IN CHAR16 *fmt) {
-    EFI_INPUT_KEY efi_input_key;
-
-    // wait for a keystroke
-    Print(fmt);
-    WaitForSingleEvent(ST->ConIn->WaitForKey, 0);
-    EFI_STATUS status = uefi_call_wrapper(ST->ConIn->ReadKeyStroke, 2, ST->ConIn, &efi_input_key);
-
-    Print(L"\nScanCode: %xh  UnicodeChar: %xh CallRtStatus: %x\n\n", efi_input_key.ScanCode, efi_input_key.UnicodeChar, status);
-    uefi_call_wrapper(ST->ConOut->ClearScreen, 1, ST->ConOut);
 
     return EFI_SUCCESS;
 }
@@ -96,28 +86,71 @@ VOID EFIAPI ErrorCheck(EFI_STATUS status, IN CHAR16 *fmt) {
     }
 }
 
+
+void write_string( int color, const char *string )
+{
+    volatile char *video = (volatile char*)0xB8000;
+    while( *string != 0 )
+    {
+        *video++ = *string++;
+        *video++ = color;
+    }
+}
+
 EFI_STATUS EFIAPI efi_main(EFI_HANDLE imageHandle, EFI_SYSTEM_TABLE *st) {
     InitializeLib(imageHandle, st);
     LoadProtocols();
-    SetTextMode();
-
-    Print(L"Starting EFI boot...\n\n");
+    SetTextMode(st);
     LogProtocolStatus();
-    WaitForKeyWithMessage(L"Press a key to continue...");
+    init_graphics(GraphicsOutput);
 
     // sync memory map
-    memorymap_sync(st);
-
-    EFI_STATUS status = uefi_call_wrapper(st->BootServices->ExitBootServices, imageHandle, memorymap_mapkey);
-    if (EFI_ERROR(status)) {
-        Print(L"Error in ExitBootServices #1: %r\n", status);
-        return status;
+    struct efi_memorymap map;
+    EFI_STATUS err = memorymap_sync(st, &map);
+    if (EFI_ERROR(err)) {
+        Print(L"Error in memorymap_sync: %r\n", err);
+       return err;
     }
 
-    // Whenceforth lies the kernel
-
-    // catch
-    for (;;) {}
+    err = uefi_call_wrapper(st->BootServices->ExitBootServices, 2, imageHandle, map.key);
+    if (EFI_ERROR(err)) {
+        Print(L"Error in ExitBootServices #1: %r mapKey: %d\n", err, map.key);
+        return err;
+    }
+    
+    uefi_call_wrapper(st->RuntimeServices->SetVirtualAddressMap, 4, map.map_size, map.desc_size, map.desc_ver, map.map);
+    
+    // Some work, blends in the lithuanian flag
+    for(uint8_t o = 0; o <= 100; o += 1) {
+        for(int x = 0; x < 1920; x += 1) {
+            for(int y = 0; y < 360; y += 1) {
+                uint32_t r = (0xfd * o / 100 ) << 16;
+                uint32_t g = (0xb9 * o / 100 ) << 8;
+                uint32_t b = (0x13 * o / 100 );
+                set_pixel(x, y, r | g | b);
+            }
+        }
+        for(int x = 0; x < 1920; x += 1) {
+            for(int y = 360; y < 720; y += 1) {
+                uint32_t g = (0x6a * o / 100) << 8;
+                uint32_t b = (0x44 * o / 100);
+                set_pixel(x, y, g | b);
+            }
+        }
+        for(int x = 0; x < 1920; x += 1) {
+            for(int y = 720; y < 1080; y += 1) {
+                uint32_t r = (0xc1 * o / 100) << 16;
+                uint32_t g = (0x27 * o / 100) << 8;
+                uint32_t b = (0x2d * o / 100);
+                set_pixel(x, y, r | g | b);
+            }
+        }
+    }
+    
+    
+    for (;;) {
+        __asm__("hlt");
+    }
 
     return EFI_SUCCESS;
 }

@@ -20,17 +20,40 @@ const CHAR16 *memorymap_memorytypes[] = {
     L"EfiPalCode",
 };
 
-UINT8 memorymap_map[MEMMAP_SIZE * sizeof(EFI_MEMORY_DESCRIPTOR)];
+EFI_STATUS EFIAPI memorymap_sync(EFI_SYSTEM_TABLE *st, struct efi_memorymap *map) {
+    EFI_MEMORY_DESCRIPTOR *m = NULL;
+    UINT32 desc_version;
+    unsigned long key;
 
-EFI_STATUS EFIAPI memorymap_sync(EFI_SYSTEM_TABLE *st) {
-    UINTN memmap_size = MEMMAP_SIZE;
-    UINTN descriptor_size;
-    UINT32 descriptor_version;
-    EFI_STATUS err = uefi_call_wrapper(st->BootServices->GetMemoryMap, 5, &memmap_size, (EFI_MEMORY_DESCRIPTOR*)memorymap_map, &memorymap_mapkey, &descriptor_size, &descriptor_version);
+    map->desc_size = sizeof(*m);
+    map->map_size  = map->desc_size * 32;
+    
+    EFI_STATUS err;
+
+again:
+    // allocate pool
+    err = uefi_call_wrapper((void *)st->BootServices->AllocatePool, 3, EfiLoaderData, map->map_size, (void **)&m);
     if (err != EFI_SUCCESS) {
-        Print(L"Error in memorymap_sync: %r\n", err);
-        return err;
+        goto fail;
     }
 
+    // this should fail with buffer too small
+    err = uefi_call_wrapper((void *)st->BootServices->GetMemoryMap, 5, map->map_size, m, &key, map->desc_size, &desc_version);
+    if (err == EFI_BUFFER_TOO_SMALL) {
+        uefi_call_wrapper((void *)st->BootServices->FreePool, 1, m);
+        map->map_size += map->desc_size * 8;
+        goto again;
+    }
+    
+    if (err != EFI_SUCCESS) {
+        Print(L"Error in GetMemoryMap: %r\n", err);
+        uefi_call_wrapper((void *)st->BootServices->FreePool, 1, m);
+    }
+
+    map->key = key;
+    map->desc_ver = desc_version;
+
+fail:
+    map->map = m;
     return err;
 }
