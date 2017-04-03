@@ -1,5 +1,5 @@
-#ifndef __MEMORYMAP_H__
-#define __MEMORYMAP_H__
+#ifndef __MEMORY_H__
+#define __MEMORY_H__
 
 #include <efi.h>
 
