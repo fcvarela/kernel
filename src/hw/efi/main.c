@@ -6,7 +6,7 @@
 
 EFI_STATUS EFIAPI efi_main(EFI_HANDLE imageHandle, EFI_SYSTEM_TABLE *st) {
     struct efi_memorymap map;
-    
+
     // EFI lib init
     InitializeLib(imageHandle, st);
 

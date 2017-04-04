@@ -1,7 +1,9 @@
 #pragma once
 
-#include <stddef.h>
+// this is perfectly acceptable as stdint is now part of
+// the language spec
 #include <stdint.h>
+#include <stddef.h>
 
 struct kgraphics {
     void*  buffer_base;
@@ -10,5 +12,5 @@ struct kgraphics {
 
 extern struct kgraphics kgraphics;
 
-void kgraphics_set_pixel(int w, int h, uint32_t rgb);
+void kgraphics_set_pixel(uint32_t w, uint32_t h, uint32_t rgb);
 void kgraphics_fill_color(uint32_t rgb);
