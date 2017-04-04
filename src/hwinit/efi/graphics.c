@@ -1,10 +1,9 @@
-#include <graphics.h>
+#include "graphics.h"
 
-struct kgraphics kgraphics;
+#include <kgraphics.h>
 
-#ifdef BOOT_EFI
 // Initialize graphics and set display to largest supported mode
-EFI_STATUS kgraphics_efi_init(EFI_SYSTEM_TABLE *st) {
+EFI_STATUS kgraphics_init(EFI_SYSTEM_TABLE *st) {
     // locate protocol
     EFI_GRAPHICS_OUTPUT_PROTOCOL *protocol = NULL;
     EFI_GUID gfx_proto = EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID;
@@ -52,20 +51,4 @@ EFI_STATUS kgraphics_efi_init(EFI_SYSTEM_TABLE *st) {
     // set it
     err = uefi_call_wrapper(protocol->SetMode, 2, protocol, mode);
     return EFI_SUCCESS;
-}
-#endif
-
-void kgraphics_set_pixel(int x, int y, uint32_t rgb) {
-    int32_t *addr = kgraphics.buffer_base + sizeof(uint32_t)*(y*kgraphics.width + x);
-    *addr = rgb | 0xff000000;
-}
-
-void kgraphics_fill_color(uint32_t rgb) {
-    rgb |= 0xff000000;
-    
-    for (int y=0; y<kgraphics.height; y++) {
-        for (int x=0; x<kgraphics.width; x++) {
-            kgraphics_set_pixel(x, y, rgb);
-        }
-    }
 }

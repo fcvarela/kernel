@@ -1,5 +1,4 @@
-#ifndef __MEMORY_H__
-#define __MEMORY_H__
+#pragma once
 
 #include <efi.h>
 
@@ -10,5 +9,3 @@ struct efi_memorymap {
     UINTN                 descriptor_size;
     UINT32                descriptor_version;
 };
-
-#endif
