@@ -12,3 +12,6 @@ extern struct kgraphics kgraphics;
 
 void kgraphics_set_pixel(uint32_t w, uint32_t h, uint32_t rgb);
 void kgraphics_fill_color(uint32_t rgb);
+
+// splash screen only
+void kgraphics_draw_flag();
