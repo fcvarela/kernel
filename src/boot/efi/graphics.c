@@ -48,6 +48,7 @@ EFI_STATUS kgraphics_init(EFI_SYSTEM_TABLE *st) {
   kgraphics.buffer_size = protocol->Mode->FrameBufferSize;
   kgraphics.width = info->HorizontalResolution;
   kgraphics.height = info->VerticalResolution;
+  kgraphics.px_per_line = info->PixelsPerScanLine;
 
   // set it
   err = uefi_call_wrapper(protocol->SetMode, 2, protocol, mode);

@@ -5,7 +5,7 @@
 
 struct kgraphics {
   void *buffer_base;
-  size_t buffer_size, width, height;
+  size_t buffer_size, width, height, px_per_line;
 };
 
 extern struct kgraphics kgraphics;

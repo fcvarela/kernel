@@ -3,7 +3,7 @@
 struct kgraphics kgraphics;
 
 void kgraphics_set_pixel(uint32_t x, uint32_t y, uint32_t rgb) {
-  uint32_t *addr = kgraphics.buffer_base + sizeof(uint32_t) * (y * kgraphics.width + x);
+  uint32_t *addr = kgraphics.buffer_base + sizeof(uint32_t) * (y * kgraphics.px_per_line + x);
   *addr = rgb | 0xff000000;
 }
 
