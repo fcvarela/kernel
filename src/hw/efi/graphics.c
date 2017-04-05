@@ -26,9 +26,11 @@ EFI_STATUS kgraphics_init(EFI_SYSTEM_TABLE *st) {
   UINT32 max_height = 0, mode = 0;
   for (UINT32 i = 0; i < protocol->Mode->MaxMode; i += 1) {
     err = uefi_call_wrapper(protocol->QueryMode, 4, protocol, i, &size, &info);
-    Print(L"Found mode #%d: %dx%d (maxheight: %d)\n", i, info->HorizontalResolution, info->VerticalResolution, max_height);
+    Print(L"Found mode #%d: %dx%d (maxheight: %d)\n", i, info->HorizontalResolution,
+          info->VerticalResolution, max_height);
 
-    if (info->PixelFormat != PixelRedGreenBlueReserved8BitPerColor && info->PixelFormat != PixelBlueGreenRedReserved8BitPerColor) {
+    if (info->PixelFormat != PixelRedGreenBlueReserved8BitPerColor &&
+        info->PixelFormat != PixelBlueGreenRedReserved8BitPerColor) {
       continue;
     }
 
