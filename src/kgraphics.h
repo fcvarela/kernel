@@ -1,13 +1,11 @@
 #pragma once
 
-// this is perfectly acceptable as stdint is now part of
-// the language spec
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
 
 struct kgraphics {
-    void*  buffer_base;
-    size_t buffer_size, width, height;
+  void *buffer_base;
+  size_t buffer_size, width, height;
 };
 
 extern struct kgraphics kgraphics;
