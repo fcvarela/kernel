@@ -6,8 +6,6 @@
 
 struct kserial {};
 
-extern struct kserial kserial;
-
 bool kserial_init();
 void kserial_print_string(const char *string);
 void kserial_print_int(uint64_t n);

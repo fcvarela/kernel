@@ -1,7 +1,6 @@
 ARCH            = $(shell uname -m | sed s,i[3456789]86,ia32,)
 INCLUDES        = $(wildcard src/*.h src/boot/efi/*.h)
-EFI_OBJS        = src/boot/efi/graphics.o src/boot/efi/main.o
-OBJS            = src/kserial.o src/kmemory.o src/kmain.o src/kgraphics.o src/karch-$(ARCH).o
+OBJS            = src/boot/efi/main.o src/boot/efi/graphics.o src/kserial.o src/kmemory.o src/kmain.o src/kgraphics.o src/karch-$(ARCH).o
 TARGET          = kernel.efi
 EFIINC          = /usr/include/efi
 EFIINCS         = -I$(EFIINC) -I$(EFIINC)/$(ARCH) -I$(EFIINC)/protocol -Isrc
@@ -19,8 +18,8 @@ all: $(TARGET)
 
 $(OBJS): $(INCLUDES)
 
-kernel.so: $(OBJS) $(EFI_OBJS)
-	ld $(LDFLAGS) $(OBJS) $(EFI_OBJS) -o $@ -lefi -lgnuefi
+kernel.so: $(OBJS)
+	ld $(LDFLAGS) $(OBJS) -o $@ -lefi -lgnuefi --no-undefined
 
 %.efi: %.so
 	objcopy -j .text -j .sdata -j .data -j .dynamic -j .dynsym  -j .rel -j .rela -j .reloc --target=efi-app-$(ARCH) $^ $@
