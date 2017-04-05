@@ -1,4 +1,4 @@
 *.DS_Store
-*.efi
-*.so
+kernel.efi
+kernel.so
 *.o
