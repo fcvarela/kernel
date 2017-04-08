@@ -10,3 +10,7 @@ inline uint8_t karch_port_inb(uint16_t port) {
   __asm__ volatile("inb %w1,%b0" : "=a"(data) : "d"(port));
   return data;
 }
+
+inline void karch_halt() {
+  __asm__("hlt");
+}
