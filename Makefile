@@ -8,7 +8,7 @@ LIB             = /usr/lib
 EFILIB          = /usr/lib/gnuefi
 EFI_CRT_OBJS    = $(LIB)/crt0-efi-$(ARCH).o
 EFI_LDS         = $(LIB)/elf_$(ARCH)_efi.lds
-CFLAGS          = $(EFIINCS) -fno-stack-protector -fpic -fshort-wchar -mno-red-zone -Wall -DBOOT_EFI
+CFLAGS          = $(EFIINCS) -fno-stack-protector -fpic -fshort-wchar -mno-red-zone -Wall -Wstrict-prototypes -DBOOT_EFI
 ifeq ($(ARCH),x86_64)
   CFLAGS += -DEFI_FUNCTION_WRAPPER
 endif

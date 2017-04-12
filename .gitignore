@@ -2,3 +2,4 @@
 kernel.efi
 kernel.so
 *.o
+.vscode
