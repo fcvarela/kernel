@@ -6,7 +6,8 @@
 
 struct kserial {};
 
-bool kserial_init();
+bool kserial_init(void);
+bool serial_port_writable(void);
 void kserial_print_string(const char *string);
 void kserial_print_int(uint64_t n);
 void kserial_print_hex(uint64_t n);

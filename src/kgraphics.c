@@ -28,7 +28,7 @@ bool kgraphics_draw_flag_is_center_square(uint32_t x, uint32_t y) {
   return (x_inside_square && y_inside_square);
 }
 
-void kgraphics_draw_flag() {
+void kgraphics_draw_flag(void) {
   uint32_t red = 0xff << 16;
   uint32_t green = 0x66 << 8;
   uint32_t yellow = 0xff << 16 | 0xff << 8;

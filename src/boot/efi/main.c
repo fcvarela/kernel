@@ -11,7 +11,7 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE imageHandle, EFI_SYSTEM_TABLE *st) {
   InitializeLib(imageHandle, st);
 
   // Init serial for debugging and troubleshooting first
-  kserial_init(st);
+  kserial_init();
 
   // Init graphics to graphics mode
   kgraphics_init(st);

@@ -44,7 +44,7 @@ void write_serial_register(uint16_t offset, uint8_t d) {
   karch_port_outb(SERIAL_REGISTER_BASE + offset * SERIAL_REGISTER_STRIDE, d);
 }
 
-bool kserial_init() {
+bool kserial_init(void) {
   // Calculate divisor for baud generator
   //    Ref_Clk_Rate / Baud_Rate / 16
   uint32_t divisor = SERIAL_CLOCK_RATE / (SERIAL_BAUD_RATE * 16);
@@ -89,7 +89,7 @@ bool kserial_init() {
   return true;
 }
 
-bool serial_port_writable() {
+bool serial_port_writable(void) {
   if (SERIAL_USE_HW_FLOW_CONTROL) {
     if (SERIAL_DETECT_CABLE) {
       // Wait for both DSR and CTS to be set
